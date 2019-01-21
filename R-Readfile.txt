@@ -1,0 +1,203 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r}
+#Read a file from own machine
+# EX:1
+#Read data from Excel/CSV
+data1 =read.csv("C:\\Personal\\Learning\\Certification\\R and ML\\Course-Script-1\\Course_Script_1\\section2\\winequality-red.csv", header = T) #display first two data
+head(data1,2)   
+###See the output is data Frame but  see the comun name is not coming properly.
+
+data2 =read.csv("C:\\Personal\\Learning\\Certification\\R and ML\\Course-Script-1\\Course_Script_1\\section2\\winequality-red.csv", header = T,sep=";") #display first two data
+head(data2,2)   
+# Now see the data coming clearly.
+str(data1)
+###See the output is string
+
+# EX2:
+#Now lets read some Text file...resolve this later
+data3= read.table("C:\\Personal\\Learning\\Certification\\R and ML\\Course-Script-1\\Course_Script_1\\section2\\text-doc.txt")
+head(data2)
+
+#EX:3
+###Read a file from Excel file
+# Lets install readxl package and load it
+install.packages("readxl")
+library(readxl)
+data4<-read_excel("C:\\Personal\\Learning\\Certification\\R and ML\\Course-Script-1\\Course_Script_1\\section2\\boston1.xls")
+head(data4)
+# we are getting some warning message that readxl works good in tibble package.
+#lets install
+help(tibble)
+install.packages("tibble")
+library(tibble)
+data5<-read_excel("C:\\Personal\\Learning\\Certification\\R and ML\\Course-Script-1\\Course_Script_1\\section2\\boston1.xls")
+head(data5)
+summary(data5)
+
+#EX:4: Read the Json[JavaScript object notation] file from web
+install.packages("rjson")
+library(rjson)
+rjson_file<-"http://api.worldbank.org/country?per_page=10&region=OED&lendingtype=LNX&format=json"
+rjson_data<-fromJSON(file=rjson_file)
+head(rjson_data)
+rjson_data[[1]]
+rjson_data[[2]]
+# So here the data is in rjson_data[[2]]..i need to read these properly
+data6<-lapply(rjson_data[[2]],function(x) c(x["id"], x["iso2Code"],x["name"],x["incomeLevel"]))
+
+data6<-do.call(rbind,data6)
+data6
+
+
+#Ex5: Data extraction from SQlite database.
+install.packages("RSQLite" )
+install.packages("DBI" )
+
+library(RSQLite)
+library(DBI)
+# for the timebeing lets read fro r-in-built dataset
+#Make connection to inbuilt database
+db= RSQLite::datasetsDb()
+#Lets us see what datasets is there in this database
+dbListTables(db)
+
+#Now lets read Co2 table
+dbReadTable(db,"CO2")
+
+
+# lets us read some exact record
+dbGetQuery(db, "SELECT * from CO2 where  conc <100")
+#Diconnect from database
+dbDisconnect(db)
+
+#Ex6: read a real database
+
+
+setwd("C:\\Personal\\Learning\\Certification\\R and ML\\Course-Script-1\\Course_Script_1\\section2\\ipl" )
+
+
+db = dbConnect(dbDriver("SQLite"),"database.sqlite" ) 
+# DbDriver is giving datgabase type and thnen the database name we hgave in #above command
+alltables = dbListTables(db)
+
+head(alltables)
+
+dbDisconnect(db_real)
+
+#Ex7: Read data in SPSS &DBF[vector/geographic] format
+
+#The below code will not work in notebook but in script it will work
+require(foreign)
+
+setwd("C:\\Personal\\Learning\\Certification\\R and ML\\Course-Script-1\\Course_Script_1\\section2\\P_malaysia" )
+z =  read.dbf("C:\\Personal\\Learning\\Certification\\R and ML\\Course-Script-1\\Course_Script_1\\section2\\P_malaysia",as.is=F)
+
+z
+
+
+
+#Ex:8Load SPSS data.
+
+#Try Later
+
+
+#EX:9
+#Read online CSV file
+
+library(RCurl)
+
+data1<- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data")
+
+head(data1)
+
+# Now consider some data set where metadata info is on the  top of the datga
+# we need to skip those data
+
+#See this url.https://raw.githubusercontent.com/opetchey/RREEBES/master/Beninca_etal_2008_Nature/data/nutrients_original.csv
+
+data1<-read.csv("https://raw.githubusercontent.com/opetchey/RREEBES/master/Beninca_etal_2008_Nature/data/nutrients_original.csv",skip=7,header = T)
+data1
+
+
+# read Googlesheet
+install.packages("googlesheets")
+library(googlesheets)
+install.packages('stringi')
+library(stringi)
+
+#Authenticate with google drive
+ gs_ls()
+
+# Get the whole sheet
+
+be= gs_title("Britain Elects / Public Opinion")
+
+#List of worksheet
+gs_ws_ls(be)
+
+
+#Lets read wesminster sheet
+
+
+west= gs_read(ss=be, ws="Westminster voting intentions", skip=1)
+
+#Modify as dataframe
+wdf=as.data.frame(west)
+head(west)
+
+
+
+#EX10: Online HTML tables
+
+#Read from wiki: https://en.wikipedia.org/wiki/2016_Summer_Olympics#cite_note-11
+library(XML)
+library(RCurl)
+
+url= "https://en.wikipedia.org/wiki/2016_Summer_Olympics#cite_note-11"
+urldata= getURL(url)
+
+data= readHTMLTable(urldata,stringAsFactor=F)
+names(data)
+head(data)
+
+
+x= data$`2016 Summer Olympics medal table`
+
+x
+
+
+#This method will not work when table is coded as null
+# So below is the method
+library(rvest)
+url= "https://en.wikipedia.org/wiki/2016_Summer_Olympics#cite_note-11"
+
+
+medal_tally = url %>% read_html() %>%
+  html_nodes(xpath='//*[@id="mw-content-text"]/div/center[1]/table') %>%      html_table(fill=TRUE)
+
+medal_tally =medal_tally[[1]]
+head(medal_tally)
+#Run below codebefore saving & closing
+
+
+
+setwd("C:\\Personal\\Learning\\Certification\\R and ML\\Own Work")"
+```
+
